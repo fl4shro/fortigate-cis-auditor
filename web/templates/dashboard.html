@@ -1,0 +1,1159 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>FortiGate CIS Auditor</title>
+
+    <style>
+
+        :root {
+            --bg: #070b13;
+            --panel: #0f172a;
+            --panel2: #111c30;
+            --border: #1e293b;
+            --text: #f8fafc;
+            --muted: #94a3b8;
+            --blue: #3b82f6;
+            --green: #10b981;
+            --red: #ef4444;
+            --yellow: #f59e0b;
+            --purple: #8b5cf6;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            min-height: 100vh;
+            font-family: Inter, "Segoe UI", Arial, sans-serif;
+            background:
+                radial-gradient(circle at 10% 0%, rgba(37,99,235,.10), transparent 30%),
+                radial-gradient(circle at 90% 100%, rgba(124,58,237,.08), transparent 30%),
+                var(--bg);
+            color: var(--text);
+        }
+
+        .navbar {
+            height: 70px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 30px;
+            background: rgba(7,11,19,.88);
+            border-bottom: 1px solid var(--border);
+            backdrop-filter: blur(14px);
+            position: sticky;
+            top: 0;
+            z-index: 50;
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-weight: 800;
+        }
+
+        .brand-icon {
+            width: 38px;
+            height: 38px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg,#2563eb,#7c3aed);
+        }
+
+        .brand small {
+            display: block;
+            color: var(--muted);
+            font-size: 10px;
+            font-weight: 500;
+            margin-top: 2px;
+        }
+
+
+        .privacy-note {
+            margin: 0 0 20px;
+            padding: 13px 16px;
+            border: 1px solid rgba(0, 255, 204, 0.18);
+            border-radius: 10px;
+            background: rgba(0, 255, 204, 0.045);
+            color: #cbd5e1;
+            font-size: 12px;
+            line-height: 1.6;
+        }
+
+        .privacy-note strong {
+            color: #00ffcc;
+        }
+
+        .privacy-note code {
+            color: #e2e8f0;
+            font-family: monospace;
+        }
+
+        .container {
+            width: min(1380px, calc(100% - 36px));
+            margin: auto;
+            padding: 34px 0 60px;
+        }
+
+        .hero {
+            margin-bottom: 25px;
+        }
+
+        .hero h2 {
+            font-size: 27px;
+            letter-spacing: -.7px;
+        }
+
+        .hero p {
+            margin-top: 7px;
+            color: var(--muted);
+            font-size: 13px;
+        }
+
+        .upload {
+            padding: 28px;
+            border: 1px solid var(--border);
+            border-radius: 18px;
+            background: rgba(15,23,42,.76);
+            margin-bottom: 25px;
+        }
+
+        .drop {
+            position: relative;
+            min-height: 150px;
+            border: 1.5px dashed #334155;
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            transition: .2s;
+        }
+
+        .drop:hover {
+            border-color: var(--blue);
+            background: rgba(59,130,246,.035);
+        }
+
+        .drop input {
+            position: absolute;
+            inset: 0;
+            opacity: 0;
+            cursor: pointer;
+        }
+
+        .drop-icon {
+            font-size: 34px;
+            margin-bottom: 9px;
+        }
+
+        .drop strong {
+            display: block;
+            font-size: 14px;
+        }
+
+        .drop span {
+            display: block;
+            margin-top: 5px;
+            color: var(--muted);
+            font-size: 12px;
+        }
+
+        .upload-bottom {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 15px;
+            margin-top: 16px;
+        }
+
+        select {
+            padding: 11px 14px;
+            border-radius: 9px;
+            border: 1px solid var(--border);
+            background: #0b1220;
+            color: white;
+        }
+
+        .analyze {
+            border: 0;
+            padding: 12px 24px;
+            border-radius: 9px;
+            color: white;
+            font-weight: 700;
+            cursor: pointer;
+            background: linear-gradient(135deg,#2563eb,#7c3aed);
+        }
+
+        .analyze:hover {
+            box-shadow: 0 10px 28px rgba(37,99,235,.22);
+        }
+
+        .flash {
+            padding: 13px 16px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            font-size: 13px;
+        }
+
+        .success {
+            background: rgba(16,185,129,.10);
+            border: 1px solid rgba(16,185,129,.22);
+            color: #6ee7b7;
+        }
+
+        .error {
+            background: rgba(239,68,68,.10);
+            border: 1px solid rgba(239,68,68,.22);
+            color: #fca5a5;
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(5,1fr);
+            gap: 14px;
+            margin-bottom: 22px;
+        }
+
+        .card {
+            background: rgba(15,23,42,.80);
+            border: 1px solid var(--border);
+            border-radius: 15px;
+            padding: 20px;
+        }
+
+        .label {
+            color: var(--muted);
+            text-transform: uppercase;
+            letter-spacing: .8px;
+            font-size: 10px;
+            font-weight: 700;
+        }
+
+        .value {
+            margin-top: 8px;
+            font-size: 30px;
+            font-weight: 800;
+        }
+
+        .detail {
+            margin-top: 5px;
+            color: #64748b;
+            font-size: 11px;
+        }
+
+        .green { color: #34d399; }
+        .red { color: #f87171; }
+        .yellow { color: #fbbf24; }
+
+        .section {
+            background: rgba(15,23,42,.80);
+            border: 1px solid var(--border);
+            border-radius: 15px;
+            padding: 22px;
+            margin-bottom: 20px;
+            overflow: hidden;
+        }
+
+        .section-title {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 18px;
+        }
+
+        .section-title h3 {
+            font-size: 15px;
+        }
+
+        .section-title span {
+            color: var(--muted);
+            font-size: 11px;
+        }
+
+        .table-wrap {
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 12px;
+        }
+
+        th {
+            text-align: left;
+            padding: 11px;
+            color: var(--muted);
+            background: #0b1220;
+            font-size: 10px;
+            text-transform: uppercase;
+            letter-spacing: .5px;
+        }
+
+        td {
+            padding: 12px 11px;
+            border-bottom: 1px solid rgba(148,163,184,.06);
+            vertical-align: top;
+        }
+
+        tr:hover td {
+            background: rgba(255,255,255,.018);
+        }
+
+        .rule {
+            color: #67e8f9;
+            font-family: monospace;
+            font-weight: 700;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 99px;
+            font-size: 9px;
+            font-weight: 800;
+            text-transform: uppercase;
+        }
+
+        .badge-critical {
+            background: rgba(239,68,68,.13);
+            color: #f87171;
+        }
+
+        .badge-high {
+            background: rgba(245,158,11,.13);
+            color: #fbbf24;
+        }
+
+        .badge-medium {
+            background: rgba(59,130,246,.13);
+            color: #60a5fa;
+        }
+
+        .badge-low {
+            background: rgba(16,185,129,.13);
+            color: #34d399;
+        }
+
+        .badge-level {
+            background: rgba(139,92,246,.13);
+            color: #a78bfa;
+        }
+
+        .actual {
+            color: #fbbf24;
+            font-family: monospace;
+            max-width: 350px;
+            word-break: break-word;
+        }
+
+        .downloads {
+            display: flex;
+            gap: 9px;
+            flex-wrap: wrap;
+        }
+
+        .download {
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
+            padding: 10px 14px;
+            border: 1px solid var(--border);
+            border-radius: 9px;
+            color: #cbd5e1;
+            text-decoration: none;
+            font-size: 11px;
+        }
+
+        .download:hover {
+            color: white;
+            border-color: #475569;
+            background: #111827;
+        }
+
+        .empty {
+            padding: 45px 20px;
+            text-align: center;
+            color: var(--muted);
+        }
+
+        .empty-icon {
+            font-size: 42px;
+            margin-bottom: 12px;
+            opacity: .6;
+        }
+
+        @media(max-width:900px) {
+            .stats {
+                grid-template-columns: repeat(2,1fr);
+            }
+        }
+
+        @media(max-width:600px) {
+
+            .navbar {
+                padding: 0 15px;
+            }
+
+            .container {
+                width: min(100% - 22px,1380px);
+                padding-top: 20px;
+            }
+
+            .stats {
+                grid-template-columns: 1fr;
+            }
+
+            .upload-bottom {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .analyze {
+                width: 100%;
+            }
+
+            .user {
+                display: none;
+            }
+        }
+
+
+        .cli-guide {
+            margin-bottom: 22px;
+            border: 1px solid rgba(0,255,204,.18);
+            border-radius: 14px;
+            background:
+                linear-gradient(
+                    135deg,
+                    rgba(0,255,204,.045),
+                    rgba(37,99,235,.025)
+                );
+            overflow: hidden;
+        }
+
+        .cli-guide-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 14px 17px;
+            border-bottom: 1px solid rgba(0,255,204,.10);
+            background: rgba(0,255,204,.025);
+        }
+
+        .cli-guide-icon {
+            width: 34px;
+            height: 34px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            border-radius: 9px;
+            background: rgba(0,255,204,.08);
+            color: #00ffcc;
+            font-size: 17px;
+        }
+
+        .cli-guide-title {
+            color: #f8fafc;
+            font-size: 14px;
+            font-weight: 800;
+        }
+
+        .cli-guide-subtitle {
+            margin-top: 3px;
+            color: #94a3b8;
+            font-size: 11px;
+        }
+
+        .cli-guide-body {
+            padding: 16px 17px 18px;
+            color: #cbd5e1;
+            font-size: 13px;
+            line-height: 1.65;
+        }
+
+        .cli-guide-body p {
+            margin-bottom: 10px;
+        }
+
+        .cli-guide-body strong {
+            color: #f8fafc;
+        }
+
+        .cli-command {
+            margin: 12px 0 14px;
+            padding: 14px 16px;
+            background: #050a12;
+            border: 1px solid rgba(0,255,204,.14);
+            border-radius: 9px;
+            overflow-x: auto;
+        }
+
+        .cli-command-label {
+            margin-bottom: 8px;
+            color: #64748b;
+            font-size: 9px;
+            font-weight: 800;
+            letter-spacing: 1px;
+        }
+
+        .cli-command code {
+            color: #00ffcc;
+            font-family:
+                "JetBrains Mono",
+                "Fira Code",
+                Consolas,
+                monospace;
+            font-size: 13px;
+            line-height: 1.75;
+            white-space: pre;
+        }
+
+        .cli-guide-note {
+            margin-top: 12px;
+            padding: 10px 13px;
+            border-left: 3px solid #00ffcc;
+            border-radius: 5px;
+            background: rgba(0,255,204,.035);
+            color: #a8b7c7;
+            font-size: 12px;
+        }
+
+        .cli-guide-note strong {
+            color: #00ffcc;
+        }
+
+
+        /* =====================================================
+           BOTÃO ANALISAR - ESTADO DE PROCESSAMENTO
+        ===================================================== */
+
+        .analyze.loading {
+            background: #475569 !important;
+            color: #e2e8f0 !important;
+            cursor: wait !important;
+            opacity: .9;
+            box-shadow: none !important;
+            transform: none !important;
+            position: relative;
+        }
+
+        .analyze.loading::before {
+            content: "";
+            display: inline-block;
+            width: 11px;
+            height: 11px;
+            margin-right: 9px;
+            vertical-align: -1px;
+            border: 2px solid rgba(255,255,255,.30);
+            border-top-color: #ffffff;
+            border-radius: 50%;
+            animation: cis-spin .75s linear infinite;
+        }
+
+        @keyframes cis-spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        .analyze.loading:hover {
+            box-shadow: none !important;
+        }
+
+    </style>
+
+</head>
+
+<body>
+
+<nav class="navbar">
+
+    <div class="brand">
+
+        <div class="brand-icon">
+            🛡️
+        </div>
+
+        <div>
+            FortiGate CIS Auditor
+            <small>Configuration Security Assessment</small>
+        </div>
+
+    </div>
+</nav>
+
+<div class="container">
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+
+        {% for category, message in messages %}
+
+            <div class="flash {{ category }}">
+                {{ message }}
+            </div>
+
+        {% endfor %}
+
+    {% endwith %}
+
+    <div class="hero">
+
+        <h2>Security Assessment</h2>
+
+        <p>
+            Envie o backup de configuração do FortiGate para executar
+            automaticamente o CIS Benchmark.
+        </p>
+
+    </div>
+
+    <div class="cli-guide">
+
+        <div class="cli-guide-header">
+
+            <div class="cli-guide-icon">
+                ⚙
+            </div>
+
+            <div>
+                <div class="cli-guide-title">
+                    Recomendação para uma análise mais precisa
+                </div>
+
+                <div class="cli-guide-subtitle">
+                    Geração da configuração completa pelo CLI do FortiGate
+                </div>
+            </div>
+
+        </div>
+
+        <div class="cli-guide-body">
+
+            <p>
+                Para obter a melhor cobertura durante a avaliação,
+                recomendamos gerar o arquivo de configuração diretamente
+                pelo <strong>CLI do FortiGate</strong>.
+            </p>
+
+            <p>
+                No FortiGate, execute os comandos abaixo:
+            </p>
+
+            <div class="cli-command">
+
+                <div class="cli-command-label">
+                    FORTIGATE CLI
+                </div>
+
+                <code>config system console
+    set output standard
+end
+show full-configuration</code>
+
+            </div>
+
+            <p>
+                Após executar o comando,
+                <strong>salve toda a saída apresentada pelo CLI</strong>
+                em um arquivo com extensão <strong>.conf</strong>
+                e envie o arquivo nesta página.
+            </p>
+
+            <div class="cli-guide-note">
+                <strong>Importante:</strong>
+                não interrompa, filtre ou omita partes da saída.
+                A configuração completa permite que o auditor avalie
+                corretamente os controles aplicáveis do CIS Benchmark.
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <div class="privacy-note">
+        <strong>🔒 Privacidade:</strong>
+        seu arquivo <code>.conf</code> é processado somente em memória
+        para executar a análise. O arquivo de configuração não é
+        armazenado permanentemente no servidor. O resultado fica
+        disponível apenas nesta sessão do navegador e expira
+        automaticamente.
+    </div>
+
+    <div class="upload">
+
+        <form
+            action="/upload"
+            method="POST"
+            enctype="multipart/form-data"
+        >
+
+            <div class="drop">
+
+                <input
+                    type="file"
+                    name="config_file"
+                    accept=".conf"
+                    required
+                    onchange="showFile(this)"
+                >
+
+                <div>
+
+                    <div class="drop-icon">
+                        📄
+                    </div>
+
+                    <strong id="fileName">
+                        Arraste seu arquivo .CONF
+                    </strong>
+
+                    <span>
+                        ou clique para selecionar o backup
+                    </span>
+
+                </div>
+
+            </div>
+
+            <div class="upload-bottom">
+
+                <select name="level">
+
+                    <option value="all">
+                        CIS completo — Level 1 + Level 2
+                    </option>
+
+                    <option value="1">
+                        Somente Level 1
+                    </option>
+
+                    <option value="2">
+                        Somente Level 2
+                    </option>
+
+                </select>
+
+                <button class="analyze" type="submit">
+                    🔍 ANALISAR CONFIGURAÇÃO
+                </button>
+
+            </div>
+
+        </form>
+
+    </div>
+
+    {% if audit.report %}
+
+        {% set r = audit.report %}
+
+        <div class="stats">
+
+            <div class="card">
+
+                <div class="label">
+                    Compliance
+                </div>
+
+                <div class="value
+                    {% if r.overall_percentage >= 80 %}
+                        green
+                    {% elif r.overall_percentage >= 60 %}
+                        yellow
+                    {% else %}
+                        red
+                    {% endif %}
+                ">
+                    {{ r.overall_percentage }}%
+                </div>
+
+                <div class="detail">
+                    {{ r.passed_rules }}/{{ r.total_rules }} controles
+                </div>
+
+            </div>
+
+            <div class="card">
+
+                <div class="label">
+                    Level 1
+                </div>
+
+                <div class="value">
+                    {{ r.level1_percentage }}%
+                </div>
+
+                <div class="detail">
+                    {{ r.level1_passed }}/{{ r.level1_total }} aprovados
+                </div>
+
+            </div>
+
+            <div class="card">
+
+                <div class="label">
+                    Level 2
+                </div>
+
+                <div class="value">
+                    {{ r.level2_percentage }}%
+                </div>
+
+                <div class="detail">
+                    {{ r.level2_passed }}/{{ r.level2_total }} aprovados
+                </div>
+
+            </div>
+
+            <div class="card">
+
+                <div class="label">
+                    Weighted Score
+                </div>
+
+                <div class="value">
+                    {{ r.weighted_score }}%
+                </div>
+
+                <div class="detail">
+                    Severity weighted
+                </div>
+
+            </div>
+
+            <div class="card">
+
+                <div class="label">
+                    Falhas
+                </div>
+
+                <div class="value red">
+                    {{ r.failed_rules }}
+                </div>
+
+                <div class="detail">
+                    Requerem atenção
+                </div>
+
+            </div>
+
+        </div>
+
+        {% if r.failed_results %}
+
+        <div class="section">
+
+            <div class="section-title">
+
+                <h3>
+                    ❌ Controles que precisam de correção
+                </h3>
+
+                <span>
+                    {{ r.failed_rules }} falhas
+                </span>
+
+            </div>
+
+            <div class="table-wrap">
+
+                <table>
+
+                    <thead>
+
+                        <tr>
+
+                            <th>CIS</th>
+                            <th>Controle</th>
+                            <th>Nível</th>
+                            <th>Severidade</th>
+                            <th>Configuração encontrada</th>
+                            <th>Como corrigir</th>
+
+                        </tr>
+
+                    </thead>
+
+                    <tbody>
+
+                    {% for res in r.failed_results %}
+
+                        <tr>
+
+                            <td class="rule">
+                                {{ res.rule_id }}
+                            </td>
+
+                            <td>
+                                {{ res.title }}
+                            </td>
+
+                            <td>
+                                <span class="badge badge-level">
+                                    L{{ res.level.value }}
+                                </span>
+                            </td>
+
+                            <td>
+
+                                <span class="badge badge-{{ res.severity.value|lower }}">
+                                    {{ res.severity.value }}
+                                </span>
+
+                            </td>
+
+                            <td class="actual">
+                                {{ res.actual_value }}
+                            </td>
+
+                            <td>
+                                {{ res.remediation }}
+                            </td>
+
+                        </tr>
+
+                    {% endfor %}
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+        </div>
+
+        {% endif %}
+
+        <div class="section">
+
+            <div class="section-title">
+
+                <h3>
+                    📋 Todos os controles
+                </h3>
+
+                <span>
+                    {{ r.total_rules }} controles avaliados
+                </span>
+
+            </div>
+
+            <div class="table-wrap">
+
+                <table>
+
+                    <thead>
+
+                        <tr>
+
+                            <th>CIS</th>
+                            <th>Controle</th>
+                            <th>Nível</th>
+                            <th>Severidade</th>
+                            <th>Status</th>
+                            <th>Valor</th>
+
+                        </tr>
+
+                    </thead>
+
+                    <tbody>
+
+                    {% for res in r.results %}
+
+                        <tr>
+
+                            <td class="rule">
+                                {{ res.rule_id }}
+                            </td>
+
+                            <td>
+                                {{ res.title }}
+                            </td>
+
+                            <td>
+                                <span class="badge badge-level">
+                                    L{{ res.level.value }}
+                                </span>
+                            </td>
+
+                            <td>
+                                <span class="badge badge-{{ res.severity.value|lower }}">
+                                    {{ res.severity.value }}
+                                </span>
+                            </td>
+
+                            <td>
+
+                                {% if res.passed %}
+
+                                    <span class="green">
+                                        ✓ PASS
+                                    </span>
+
+                                {% else %}
+
+                                    <span class="red">
+                                        ✕ FAIL
+                                    </span>
+
+                                {% endif %}
+
+                            </td>
+
+                            <td class="actual">
+                                {{ res.actual_value }}
+                            </td>
+
+                        </tr>
+
+                    {% endfor %}
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+        </div>
+
+        <div class="section">
+
+            <div class="section-title">
+
+                <h3>
+                    📥 Relatórios
+                </h3>
+
+                <span>
+                    {{ audit.timestamp }}
+                </span>
+
+            </div>
+
+            <div class="downloads">
+
+                <a
+                    class="download"
+                    href="/download/html"
+                >
+                    📄 HTML
+                </a>
+
+                <a
+                    class="download"
+                    href="/download/json"
+                >
+                    {} JSON
+                </a>
+
+                <a
+                    class="download"
+                    href="/download/pdf"
+                >
+                    📑 PDF
+                </a>
+
+                <a
+                    class="download"
+                    href="/download/remediation"
+                >
+                    🔧 Remediação CLI
+                </a>
+
+            </div>
+
+        </div>
+
+    {% else %}
+
+        <div class="section">
+
+            <div class="empty">
+
+                <div class="empty-icon">
+                    🛡️
+                </div>
+
+                <strong>
+                    Nenhuma auditoria executada
+                </strong>
+
+                <p style="margin-top:8px">
+                    Envie um backup .conf para começar.
+                </p>
+
+            </div>
+
+        </div>
+
+    {% endif %}
+
+</div>
+
+<script>
+
+function showFile(input) {
+
+    const name = document.getElementById("fileName");
+
+    if (input.files && input.files.length > 0) {
+        name.textContent = input.files[0].name;
+    }
+
+}
+
+</script>
+
+
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+
+    const form = document.querySelector('.upload form');
+    const button = document.querySelector('.analyze');
+
+    if (!form || !button) {
+        return;
+    }
+
+    form.addEventListener("submit", function () {
+
+        /* Evita múltiplos envios */
+        if (button.classList.contains("loading")) {
+            return;
+        }
+
+        /* Estado visual de processamento */
+        button.classList.add("loading");
+
+        button.disabled = true;
+
+        button.innerHTML =
+            "ANALISANDO CONFIGURAÇÃO...";
+
+    });
+
+});
+</script>
+
+</body>
+
+</html>
