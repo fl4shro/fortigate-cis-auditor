@@ -253,14 +253,31 @@ def _eval_hostname(rule, config):
 
 
 def _eval_usb_disable(rule, config):
-    val = config.get_global_setting("usb-auto-install", "")
-    if val.lower() == "disable":
-        return rule._make_result(True, "USB auto-install disabled")
-    # If not explicitly set, FortiGate defaults to enable
-    if not val:
-        return rule._make_result(False, "usb-auto-install not explicitly set (defaults to enable)")
-    return rule._make_result(False, f"usb-auto-install: {val}")
+    blocks = config.get_blocks("system auto-install")
 
+    if not blocks:
+        return rule._make_result(
+            False,
+            "system auto-install not configured; both settings must be explicitly disabled"
+        )
+
+    block = blocks[0]
+    config_value = block.get("auto-install-config", "").strip().lower()
+    image_value = block.get("auto-install-image", "").strip().lower()
+
+    if config_value == "disable" and image_value == "disable":
+        return rule._make_result(
+            True,
+            "auto-install-config: disable; auto-install-image: disable"
+        )
+
+    return rule._make_result(
+        False,
+        "auto-install-config: {}; auto-install-image: {}".format(
+            config_value or "not set",
+            image_value or "not set"
+        )
+    )
 
 def _eval_static_keys_tls(rule, config):
     val = config.get_global_setting("strong-crypto", "")
@@ -776,10 +793,10 @@ def get_level1_rules() -> List[CISRule]:
             title="Ensure USB firmware and configuration installation is disabled",
             level=L1, severity=RuleSeverity.HIGH,
             description="USB auto-install should be disabled to prevent unauthorized firmware changes.",
-            expected_value="usb-auto-install: disable",
-            remediation="Disable USB auto-install in system global",
+            expected_value="auto-install-config: disable; auto-install-image: disable",
+            remediation="Disable USB configuration and firmware auto-install",
             category="System", cis_section="2.1.7",
-            remediation_cli="config system global\n  set usb-auto-install disable\nend",
+            remediation_cli="config system auto-install\n  set auto-install-config disable\n  set auto-install-image disable\nend",
         ),
         CallableCISRule(
             _eval_static_keys_tls,
